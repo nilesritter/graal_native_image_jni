@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>demo</groupId>
+    <artifactId>graal_demo</artifactId>
+    <version>1.0-SNAPSHOT</version>
+  </parent>
+
+  <groupId>demo</groupId>
+  <artifactId>libdemo</artifactId>
+  <version>${revision}</version>
+
+  <name>libdemo - GraalVM Demo Native Library</name>
+
+  <packaging>jar</packaging>
+
+  <properties>  
+    <!-- properties not inherited from parent -->
+    <app.main.class>demo.NativeImpl</app.main.class>
+    <exe.file.name>libnativeimpl</exe.file.name>
+  </properties>
+
+  <dependencies>
+        <dependency>
+            <groupId>org.graalvm.sdk</groupId>
+            <artifactId>graal-sdk</artifactId>
+            <version>${graalvm.version}</version>
+            <scope>provided</scope>
+        </dependency>
+  </dependencies>
+
+  <build>
+    <pluginManagement>
+	<!-- (inherited from parent) -->
+      <plugins />
+    </pluginManagement>
+  </build>
+
+    <profiles>
+        <!-- This is the profile for compiling and packaging the JIT version of the app. To run:
+            $ mvn clean package exec:exec -PJAVA
+        -->
+        <profile>
+            <id>JAVA</id>
+            <build>
+                <!-- Compiler -->
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <version>3.8.0</version>
+                        <configuration>
+                            <source>11</source>
+                            <target>11</target>
+		            <compilerArgs>
+		              <arg>-Xlint:unchecked</arg>
+		            </compilerArgs>
+                        </configuration>
+                    </plugin>
+                    <!-- Package -->
+                    <plugin>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <version>3.1.0</version>
+                        <configuration>
+                            <descriptorRefs>
+                                <descriptorRef>jar-with-dependencies</descriptorRef>
+                            </descriptorRefs>
+                                <archive>
+                                <manifest>
+                                    <!-- Specify the main class -->
+                                    <mainClass>${app.main.class}</mainClass>
+                                </manifest>
+                            </archive>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>make-assembly</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <!-- Run the app, quick way of testing the Java version -->
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>1.2</version>
+                        <configuration>
+                            <executable>java</executable>
+                            <arguments>
+                                <argument>-classpath</argument>
+                                <classpath />
+                                <argument>${app.main.class}</argument>
+                            </arguments>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <!-- This is the default profile for generating the native image.  To run:
+            $ mvn clean package exec:exec -PNATIVE_IMAGE
+	    (the -PNATIVE_IMAGE can be omitted here)
+        -->
+        <profile>
+            <id>NATIVE_IMAGE</id>
+            <activation>
+               <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <!-- Compiler -->
+                    <plugin>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <version>3.8.0</version>
+                        <configuration>
+                            <source>11</source>
+                            <target>11</target>
+		            <compilerArgs>
+		              <arg>-Xlint:unchecked</arg>
+		            </compilerArgs>
+                        </configuration>
+                    </plugin>
+                    <!-- Package -->
+                    <plugin>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <version>3.1.0</version>
+                        <configuration>
+                            <descriptorRefs>
+                                <descriptorRef>jar-with-dependencies</descriptorRef>
+                            </descriptorRefs>
+                                <archive>
+                                <manifest>
+                                    <!-- Specify the main class -->
+                                    <mainClass>${app.main.class}</mainClass>
+                                </manifest>
+                            </archive>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>make-assembly</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <!-- Native Image -->
+                    <plugin>
+                        <groupId>org.graalvm.nativeimage</groupId>
+                        <artifactId>native-image-maven-plugin</artifactId>
+                        <version>${graalvm.version}</version>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>native-image</goal>
+                                </goals>
+                                <phase>package</phase>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <skip>false</skip>
+                            <imageName>${exe.file.name}</imageName>
+                            <!-- Set any parameters we need to pass to the native-image tool.
+                                no-fallback : create a native image that doesn't fall back to the JVM
+                                no-server : don't start a build server, which you then just need to shut down,
+                                            in order to build the image
+                            -->
+                            <buildArgs>
+                                --no-fallback --shared 
+                            </buildArgs>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>

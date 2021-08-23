@@ -1,0 +1,12 @@
+export APPJAR=appdemo/target/appdemo-1.0-SNAPSHOT.jar
+path=`pwd`/libdemo/target/libnativeimpl.so
+
+#
+# This will invoke add() and work okay
+#
+java -cp ${APPJAR}  demo.AppDemo ${path} "ADD"
+
+#
+# This will invoke evaluate() and crash
+#
+java -cp ${APPJAR}  demo.AppDemo ${path} "STRING"
