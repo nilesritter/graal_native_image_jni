@@ -24,6 +24,7 @@ To build the native shared library and its standard java client run
 
    mvn clean package
 
+
 # Artifacts
 The two components built by the project are:
 1. The "libnativeimpl.so" shared object library, containing an "evaluate" and an "add"
@@ -39,7 +40,4 @@ The "add()" function works fine. The only difference is that one is working
 with input/output long Java parameters while "evaluate" is working with
 Java String input/output.
 
-To see the problem, after build, run the script:
-
-  runtests
 

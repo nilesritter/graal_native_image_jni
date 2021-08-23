@@ -28,8 +28,8 @@ public class AppDemoTest {
 	assertEquals(3,demo.public_add(1,2));
   }
 
-  // Uncomment to cause crash
-  //@Test
+  // THIS TEST CRASHES
+  @Test
   public void appDemoEvalShouldWork() {
 	String result = "";
 	try {
